@@ -5,6 +5,7 @@ interface TodoItem {
   id: number;
   title: string;
   description: string;
+  completed: boolean;
 }
 
 function Todo() {
@@ -13,6 +14,7 @@ function Todo() {
   const [description, setDescription] = React.useState('');
   const [edit, setEdit] = React.useState<number | null>(null);
   // const [isModeOpen, setIsModeOpen] = React.useState(false);
+  const [completed, setCompleted] = React.useState(false);
 
   const fetchTodos = async () => {
     const todos = await GetTodos();
@@ -32,7 +34,9 @@ function Todo() {
       if (edit) {
         await UpdateTodo(edit, {
           title,
-          description
+          description,
+          completed
+
         })
         setEdit(null);
       } else {
@@ -72,40 +76,60 @@ function Todo() {
     setEdit(todo.id);
     setTitle(todo.title);
     setDescription(todo.description);
+    // checkbox checked
+    setCompleted(todo.completed);
     // setIsModeOpen(true);
   }
 
   return (
     <div>
       {/* Form */}
-     
-        <div className='mode'>
-          <h2>Update Todo</h2>
-          <form onSubmit={handeleSubmit}>
-            <label htmlFor="title">Title</label>
-            <input id='title' value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder='Enter a title' />
-            <label htmlFor="description">Description</label>
-            <input type="text" id='description' value={description} onChange={(e) => setDescription(e.target.value)} placeholder='Enter a description' />
-            <button type='submit'>submit</button>
-          </form>
-        </div>
-    
+
+      <div className='mode'>
+        <h2>Update Todo</h2>
+        <form onSubmit={handeleSubmit} >
+          <label htmlFor="title">Title</label>
+          <input id='title' value={title} onChange={(e) => setTitle(e.target.value)} type="text" placeholder='Enter a title' />
+          <label htmlFor="description">Description</label>
+          <input type="text" id='description' value={description} onChange={(e) => setDescription(e.target.value)} placeholder='Enter a description' />
+          <button type='submit'>submit</button>
+        </form>
+      </div>
+
 
       {/* Todo list */}
+      
       <table>
-        {todos.map((Todo) => (
-          <tr key={Todo.id}>
-            <td>{Todo.title}</td>
-            <td>{Todo.description}</td>
-            <td><button onClick={() => handeleUpdate(Todo)}>Update</button>
-              
-            </td>
+        <tbody>
+          {todos.map((Todo) => (
+            <tr key={Todo.id}>
 
-            <td><button onClick={() => handeledelete(Todo.id)}>Delete</button></td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={Todo.completed}
+                  onChange={async (e) => {
+                    await UpdateTodo(Todo.id, {
+                      completed: e.target.checked,
+                    });
+                    fetchTodos();
+                  }}
+                />
+              </td>
 
-          </tr>
-        ))}
+              <td>{Todo.title}</td>
+              <td>{Todo.description}</td>
+              <td><button
+                // disabled={Todo.completed}
+                onClick={() => handeleUpdate(Todo)}>Update</button>
 
+              </td>
+
+              <td><button onClick={() => handeledelete(Todo.id)}>Delete</button></td>
+
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   )
